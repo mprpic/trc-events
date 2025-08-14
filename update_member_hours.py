@@ -77,7 +77,7 @@ def render_locations_content(location_events):
     else:
         return """
         <div class="no-events">
-            No upcoming Member Guest Hours events found.
+            No upcoming Member Hours events found.
         </div>"""
 
 
@@ -114,7 +114,7 @@ def main():
         next_event_dt = get_next_member_hours_event(events)
         location_events[location] = next_event_dt
         if not next_event_dt:
-            print(f"E: No upcoming Member Guest Hours found at {location}.")
+            print(f"E: No upcoming Member Hours found at {location}.")
 
     # Sort locations by start time
     location_events = dict(sorted(location_events.items(), key=lambda x: x[1]))
