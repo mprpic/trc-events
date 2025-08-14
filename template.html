@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle Rock Club - Upcoming Member Guest Hours</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .location {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-left: 4px solid #007bff;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .location-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ea580c;
+            margin-bottom: 8px;
+        }
+        .event-time {
+            font-size: 1.1em;
+            color: #333;
+        }
+        .no-events {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            margin-top: 40px;
+        }
+        .updated {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧗 Upcoming Member Guest Hours 🧗</h1>
+        %locations_content%
+        <div class="updated">
+            Last updated: %last_updated%
+        </div>
+    </div>
+</body>
+</html>
