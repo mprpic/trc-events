@@ -7,6 +7,7 @@
 
 import json
 import re
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -56,29 +57,40 @@ def get_next_member_hours_event(events):
     now = datetime.now(timezone.utc)
     future_events = [e for e in events if e["start_datetime"] > now]
     if not future_events:
-        return "N/A"
+        return None
 
     return min(future_events, key=lambda x: x["start_datetime"])["start_datetime"]
 
 
 def render_locations_content(location_events):
-    if location_events:
-        locations_html = ""
-        for location, next_event_dt in location_events.items():
-            local_time = next_event_dt.astimezone(LOCAL_TZ)
-            formatted_time = local_time.strftime(DT_FMT)
-            formatted_time_full = local_time.strftime(DT_FMT_FULL)
+    locations_html = ""
+    for location, next_event_dt in location_events.items():
+        # Keys the per-gym colour rules in template.html
+        gym_class = "gym-" + location.lower().replace(" ", "-")
+        if next_event_dt is None:
             locations_html += f"""
-        <div class="location">
-            <div class="location-name">{location}</div>
-            <div class="event-time" title="{formatted_time_full}">{formatted_time}</div>
-        </div>"""
-        return locations_html
-    else:
-        return """
-        <div class="no-events">
-            No upcoming Member Hours events found.
-        </div>"""
+            <li class="gym {gym_class} empty">
+                <div class="when"><span class="day">&ndash;</span></div>
+                <div class="info">
+                    <h2 class="name">{location}</h2>
+                    <p class="detail">No sessions scheduled</p>
+                </div>
+            </li>"""
+            continue
+
+        local_time = next_event_dt.astimezone(LOCAL_TZ)
+        locations_html += f"""
+            <li class="gym {gym_class}">
+                <time class="when" datetime="{local_time.isoformat(timespec="minutes")}" title="{local_time.strftime(DT_FMT_FULL)}">
+                    <span class="mon">{local_time.strftime("%b")}</span>
+                    <span class="day">{local_time.strftime("%-d")}</span>
+                </time>
+                <div class="info">
+                    <h2 class="name">{location}</h2>
+                    <p class="detail">{local_time.strftime("%A")} &middot; <strong>{local_time.strftime("%-I:%M %p")}</strong></p>
+                </div>
+            </li>"""
+    return locations_html
 
 
 def generate_html_page(location_events):
@@ -116,8 +128,16 @@ def main():
         if not next_event_dt:
             print(f"E: No upcoming Member Hours found at {location}.")
 
-    # Sort locations by start time
-    location_events = dict(sorted(location_events.items(), key=lambda x: x[1]))
+    # No gym at all is far more likely a feed or parser change than a real gap in
+    # the schedule, so fail the workflow instead of publishing an empty page.
+    if all(dt is None for dt in location_events.values()):
+        sys.exit("E: No upcoming Member Hours found at any location.")
+
+    # Soonest first, which the template relies on to highlight the next session;
+    # locations without one go last.
+    location_events = dict(
+        sorted(location_events.items(), key=lambda x: (x[1] is None, x[1]))
+    )
 
     html_content = generate_html_page(location_events)
 
