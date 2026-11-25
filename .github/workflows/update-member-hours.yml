@@ -17,10 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       
     - name: Install uv
-      uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@v7
+      with:
+        cache-dependency-glob: update_member_hours.py
         
     - name: Parse feeds and generate page
       run: ./update_member_hours.py
@@ -31,13 +33,24 @@ jobs:
         cp index.html _site/
       
     - name: Setup Pages
-      uses: actions/configure-pages@v4
+      uses: actions/configure-pages@v6
       
     - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
+      uses: actions/upload-pages-artifact@v5
       with:
         path: './_site'
         
+    # deploy-pages sometimes lists the run's artifacts before the upload above
+    # shows up and fails with "No artifacts named github-pages"; try once more.
     - name: Deploy to GitHub Pages
       id: deployment
-      uses: actions/deploy-pages@v4
+      uses: actions/deploy-pages@v5
+      continue-on-error: true
+
+    - name: Wait before retrying the deploy
+      if: steps.deployment.outcome == 'failure'
+      run: sleep 30
+
+    - name: Deploy to GitHub Pages (retry)
+      if: steps.deployment.outcome == 'failure'
+      uses: actions/deploy-pages@v5
